@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include "vec3.hpp"
+#include "ray.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
@@ -26,13 +27,27 @@ public:
 	}
 };
 
+vec3 getColor(const Ray& ray) {
+	vec3 unitDirection = unit_vector(ray.getDirection());
+	float t = 0.5f * (unitDirection.y() + 1.0f);
+	return (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+}
+
 int main() {
 	int nx = 800, ny = 400;
 	Image image(nx, ny);
 
+	vec3 lowerLeftCorner(-2.0, -1.0, -1.0);
+	vec3 horizontal(4.0, 0.0, 0.0);
+	vec3 vertical(0.0, 2.0, 0.0);
+	vec3 origin(0.0, 0.0, 0.0);
+
 	for(int j = ny - 1; j >= 0; j--) {
 		for(int i = 0; i < nx; i++) {
-			vec3 color(float(i) / float(nx), float(j) / float(ny), 0.2);
+			float u = float(i) / float(nx);
+			float v = float(j) / float(ny);
+			Ray ray(origin, lowerLeftCorner + u * horizontal + v * vertical);
+			vec3 color = getColor(ray);
 			int ir = int(255.99 * color.r());
 			int ig = int(255.99 * color.g());
 			int ib = int(255.99 * color.b());
