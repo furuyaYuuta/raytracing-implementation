@@ -1,6 +1,8 @@
 
 #include <iostream>
-#include <limits>
+#include <random>
+#include <omp.h>
+
 #include "vec3.hpp"
 #include "ray.hpp"
 #include "hitable.hpp"
@@ -43,6 +45,13 @@ vec3 getColor(const Ray& ray, Hitable *world) {
 	}
 }
 
+float randomFloat(float min, float max) {
+	static random_device rd;
+	static  mt19937 e2(rd());
+	uniform_real_distribution<float> dist(min, max);
+	return dist(e2);
+}
+
 int main() {
 	int nx = 800, ny = 400;
 	int ns = 100;
@@ -50,18 +59,20 @@ int main() {
 
 	Camera camera;
 	Hitable *list[2];
-	list[0] = new Sphere(vec3(0.0, 0.0, -1.0), 0.5);
-	list[1] = new Sphere(vec3(0.0, -100.5, -1.0), 100);
+	list[0] = new Sphere(vec3(0.0, 0.0, -1.0f), 0.5);
+	list[1] = new Sphere(vec3(0.0, -100.5f, -1.0f), 100);
 	Hitable *world = new HitableList(list, 2);
 
-	for(int j = ny - 1; j >= 0; j--) {
-		for(int i = 0; i < nx; i++) {
+	int i, j, count = 0;
+	#pragma omp parallel for private(i)
+	for(j = ny - 1; j >= 0; j--) {
+		for(i = 0; i < nx; i++) {
 			vec3 color = vec3();
 			for(int s = 0; s < ns; s++) {
-				float u = float(i) / float(nx);
-				float v = float(j) / float(ny);
+				float u = (i + randomFloat(0.0f, 1.0f)) / float(nx);
+				float v = (j + randomFloat(0.0f, 1.0f)) / float(ny);
 				Ray ray = camera.getRay(u, v);
-				vec3 p = ray.point_at_parameter(2.0);
+//				vec3 p = ray.point_at_parameter(2.0);
 				color += getColor(ray, world);
 			}
 			color /= float(ns);
@@ -70,6 +81,8 @@ int main() {
 			int ib = int(255.99 * color.b());
 			image.setPixel(i, ny - j - 1, ir, ig, ib);
 		}
+		if(j % 20 == 0)
+			printf("%.lf%%\n", (double)(count+=20)/ny*100);
 	}
 	image.writeImage();
 
