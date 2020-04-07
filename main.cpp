@@ -34,17 +34,6 @@ public:
 	}
 };
 
-vec3 getColor(const Ray& ray, Hitable *world) {
-	hit_record record;
-	if(world->hit(ray, 0.0, numeric_limits<float>::max(), record)) {
-		return 0.5 * (record.normal + vec3(1.0, 1.0, 1.0));
-	} else {
-		vec3 unitDirection = unit_vector(ray.getDirection());
-		float t = 0.5f * (unitDirection.y() + 1.0f);
-		return (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
-	}
-}
-
 float randomFloat(float min, float max) {
 	static random_device rd;
 	static  mt19937 e2(rd());
@@ -52,9 +41,28 @@ float randomFloat(float min, float max) {
 	return dist(e2);
 }
 
+vec3 randomInUnitSphere() {
+	vec3 p;
+	do p = 2.0 * vec3(randomFloat(-1.0f, 1.0f), randomFloat(-1.0f, 1.0f), randomFloat(-1.0f, 1.0f));
+	while(p.squaredLength() >= 1.0f);
+	return p;
+}
+
+vec3 getColor(const Ray& ray, Hitable *world) {
+	hit_record record;
+	if(world->hit(ray, 0.001, numeric_limits<float>::max(), record)) {
+		vec3 target = record.point + record.normal + randomInUnitSphere();
+		return 0.5 * getColor(Ray(record.point, target-record.point), world);
+	} else {
+		vec3 unitDirection = unit_vector(ray.getDirection());
+		float t = 0.5f * (unitDirection.y() + 1.0f);
+		return (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+	}
+}
+
 int main() {
 	int nx = 800, ny = 400;
-	int ns = 100;
+	int ns = 50;
 	Image image(nx, ny);
 
 	Camera camera;
@@ -76,6 +84,7 @@ int main() {
 				color += getColor(ray, world);
 			}
 			color /= float(ns);
+			sqrt(color);
 			int ir = int(255.99 * color.r());
 			int ig = int(255.99 * color.g());
 			int ib = int(255.99 * color.b());
