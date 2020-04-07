@@ -1,7 +1,14 @@
 
 #include <iostream>
+#include <random>
+#include <omp.h>
+
 #include "vec3.hpp"
 #include "ray.hpp"
+#include "hitable.hpp"
+#include "hitableList.hpp"
+#include "sphere.hpp"
+#include "camera.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
@@ -27,32 +34,64 @@ public:
 	}
 };
 
-vec3 getColor(const Ray& ray) {
-	vec3 unitDirection = unit_vector(ray.getDirection());
-	float t = 0.5f * (unitDirection.y() + 1.0f);
-	return (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+float randomFloat(float min, float max) {
+	static random_device rd;
+	static  mt19937 e2(rd());
+	uniform_real_distribution<float> dist(min, max);
+	return dist(e2);
+}
+
+vec3 randomInUnitSphere() {
+	vec3 p;
+	do p = 2.0 * vec3(randomFloat(-1.0f, 1.0f), randomFloat(-1.0f, 1.0f), randomFloat(-1.0f, 1.0f));
+	while(p.squaredLength() >= 1.0f);
+	return p;
+}
+
+vec3 getColor(const Ray& ray, Hitable *world) {
+	hit_record record;
+	if(world->hit(ray, 0.001, numeric_limits<float>::max(), record)) {
+		vec3 target = record.point + record.normal + randomInUnitSphere();
+		return 0.5 * getColor(Ray(record.point, target-record.point), world);
+	} else {
+		vec3 unitDirection = unit_vector(ray.getDirection());
+		float t = 0.5f * (unitDirection.y() + 1.0f);
+		return (1.0f - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
+	}
 }
 
 int main() {
 	int nx = 800, ny = 400;
+	int ns = 50;
 	Image image(nx, ny);
 
-	vec3 lowerLeftCorner(-2.0, -1.0, -1.0);
-	vec3 horizontal(4.0, 0.0, 0.0);
-	vec3 vertical(0.0, 2.0, 0.0);
-	vec3 origin(0.0, 0.0, 0.0);
+	Camera camera;
+	Hitable *list[2];
+	list[0] = new Sphere(vec3(0.0, 0.0, -1.0f), 0.5);
+	list[1] = new Sphere(vec3(0.0, -100.5f, -1.0f), 100);
+	Hitable *world = new HitableList(list, 2);
 
-	for(int j = ny - 1; j >= 0; j--) {
-		for(int i = 0; i < nx; i++) {
-			float u = float(i) / float(nx);
-			float v = float(j) / float(ny);
-			Ray ray(origin, lowerLeftCorner + u * horizontal + v * vertical);
-			vec3 color = getColor(ray);
+	int i, j, count = 0;
+	#pragma omp parallel for private(i)
+	for(j = ny - 1; j >= 0; j--) {
+		for(i = 0; i < nx; i++) {
+			vec3 color = vec3();
+			for(int s = 0; s < ns; s++) {
+				float u = (i + randomFloat(0.0f, 1.0f)) / float(nx);
+				float v = (j + randomFloat(0.0f, 1.0f)) / float(ny);
+				Ray ray = camera.getRay(u, v);
+//				vec3 p = ray.point_at_parameter(2.0);
+				color += getColor(ray, world);
+			}
+			color /= float(ns);
+			sqrt(color);
 			int ir = int(255.99 * color.r());
 			int ig = int(255.99 * color.g());
 			int ib = int(255.99 * color.b());
 			image.setPixel(i, ny - j - 1, ir, ig, ib);
 		}
+		if(j % 20 == 0)
+			printf("%.lf%%\n", (double)(count+=20)/ny*100);
 	}
 	image.writeImage();
 
