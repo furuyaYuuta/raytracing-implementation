@@ -13,7 +13,7 @@ class Camera {
 	vec3 horizontal;
 	vec3 vertical;
 public:
-	Camera();
+	Camera(vec3 lookFrom, vec3 lookAt, vec3 lookUp, float vFov, float aspect);
 	Ray getRay(float u, float v);
 };
 
