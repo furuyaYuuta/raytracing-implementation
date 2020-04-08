@@ -8,10 +8,6 @@
 #include "ray.hpp"
 #include "hitable.hpp"
 
-float randomFloat(float min, float max);
-
-vec3 randomInUnitSphere();
-
 class Material {
 public:
 	virtual bool scatter(const Ray& rayIn, const hit_record& record, vec3& attenuation, Ray& scattered) const = 0;
