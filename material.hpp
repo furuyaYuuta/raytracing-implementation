@@ -31,6 +31,8 @@ public:
 	bool scatter(const Ray& rayIn, const hit_record& record, vec3& attenuation, Ray& scattered) const override;
 };
 
+float schlick(float cosine, float ref_idx);
+
 class Dielectric : public Material {
 	float ref_idx;
 public:

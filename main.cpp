@@ -55,12 +55,13 @@ int main() {
 	Image image(nx, ny);
 
 	Camera camera;
-	Hitable *list[4];
-	list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5, new Lambertian(vec3(0.8, 0.3, 0.3)));
+	Hitable *list[5];
+	list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.8, 0.3, 0.3)));
 	list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100, new Lambertian(vec3(0.8, 0.8, 0.0)));
-	list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.4, new Metal(vec3(0.8, 0.6, 0.2)));
-	list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.4, new Dielectric(1.5));
-	Hitable *world = new HitableList(list, 4);
+	list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.4f, new Metal(vec3(0.8, 0.6, 0.2)));
+	list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.4f, new Dielectric(1.5));
+	list[4] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), -0.35f, new Dielectric(1.5));
+	Hitable *world = new HitableList(list, 5);
 
 	int i, j, count = 0;
 	#pragma omp parallel for private(i)
