@@ -22,8 +22,9 @@ public:
 
 class Metal : public Material {
 	vec3 albedo;
+	float fuzz;
 public:
-	explicit Metal(const vec3& albedo) : albedo(albedo) {}
+	Metal(const vec3& albedo, float fuzzy) : albedo(albedo), fuzz(fuzz) {}
 	bool scatter(const Ray& rayIn, const hit_record& record, vec3& attenuation, Ray& scattered) const override;
 };
 

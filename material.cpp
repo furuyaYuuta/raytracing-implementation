@@ -20,7 +20,7 @@ bool Lambertian::scatter(const Ray &rayIn, const hit_record &record, vec3 &atten
 
 bool Metal::scatter(const Ray &rayIn, const hit_record &record, vec3 &attenuation, Ray &scattered) const {
 	vec3 reflected = reflect(unit_vector(rayIn.getDirection()), record.normal);
-	scattered = Ray(record.point, reflected);
+	scattered = Ray(record.point, reflected + fuzz * randomInUnitSphere());
 	attenuation = albedo;
 	// if the angle of two vectors is within 90 degrees
 	return dot(scattered.getDirection(), record.normal) > 0;
