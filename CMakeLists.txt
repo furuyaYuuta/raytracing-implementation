@@ -14,4 +14,4 @@ set(STB_DIR "${CMAKE_SOURCE_DIR}/../stb")
 include_directories("${STB_DIR}")
 link_directories("${STB_DIR}")
 
-add_executable(raytracing vec3.cpp vec3.hpp main.cpp ray.cpp ray.hpp hitable.hpp sphere.cpp sphere.hpp hitableList.cpp hitableList.hpp camera.cpp camera.hpp)
+add_executable(raytracing vec3.cpp vec3.hpp main.cpp ray.cpp ray.hpp hitable.hpp sphere.cpp sphere.hpp hitableList.cpp hitableList.hpp camera.cpp camera.hpp material.cpp material.hpp)

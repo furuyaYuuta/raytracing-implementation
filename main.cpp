@@ -1,7 +1,6 @@
 
 #include <iostream>
 #include <random>
-#include <omp.h>
 
 #include "vec3.hpp"
 #include "ray.hpp"
@@ -34,25 +33,15 @@ public:
 	}
 };
 
-float randomFloat(float min, float max) {
-	static random_device rd;
-	static  mt19937 e2(rd());
-	uniform_real_distribution<float> dist(min, max);
-	return dist(e2);
-}
-
-vec3 randomInUnitSphere() {
-	vec3 p;
-	do p = 2.0 * vec3(randomFloat(-1.0f, 1.0f), randomFloat(-1.0f, 1.0f), randomFloat(-1.0f, 1.0f));
-	while(p.squaredLength() >= 1.0f);
-	return p;
-}
-
-vec3 getColor(const Ray& ray, Hitable *world) {
+vec3 getColor(const Ray& ray, Hitable *world, int depth) {
 	hit_record record;
 	if(world->hit(ray, 0.001, numeric_limits<float>::max(), record)) {
-		vec3 target = record.point + record.normal + randomInUnitSphere();
-		return 0.5 * getColor(Ray(record.point, target-record.point), world);
+		Ray scattered;
+		vec3 attenuation;
+		if(depth < 50 && record.mat_ptr->scatter(ray, record, attenuation, scattered))
+			return attenuation * getColor(scattered, world, depth + 1);
+		else
+			return vec3();
 	} else {
 		vec3 unitDirection = unit_vector(ray.getDirection());
 		float t = 0.5f * (unitDirection.y() + 1.0f);
@@ -67,8 +56,8 @@ int main() {
 
 	Camera camera;
 	Hitable *list[2];
-	list[0] = new Sphere(vec3(0.0, 0.0, -1.0f), 0.5);
-	list[1] = new Sphere(vec3(0.0, -100.5f, -1.0f), 100);
+	list[0] = new Sphere(vec3(0.0, 0.0, -1.0f), 0.5, new Lambertian(vec3(0.8, 0.3, 0.3)));
+	list[1] = new Sphere(vec3(0.0, -100.5f, -1.0f), 100, new Lambertian(vec3(0.8, 0.8, 0.0)));
 	Hitable *world = new HitableList(list, 2);
 
 	int i, j, count = 0;
@@ -81,7 +70,7 @@ int main() {
 				float v = (j + randomFloat(0.0f, 1.0f)) / float(ny);
 				Ray ray = camera.getRay(u, v);
 //				vec3 p = ray.point_at_parameter(2.0);
-				color += getColor(ray, world);
+				color += getColor(ray, world, 0);
 			}
 			color /= float(ns);
 			sqrt(color);
