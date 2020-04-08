@@ -8,6 +8,7 @@
 #include "hitableList.hpp"
 #include "sphere.hpp"
 #include "camera.hpp"
+#include "randomUtils.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
@@ -54,7 +55,11 @@ int main() {
 	int ns = 50;
 	Image image(nx, ny);
 
-	Camera camera(vec3(-2, 2, 1), vec3(0, 0, -1), vec3(0, 1, 0), 90, float(nx)/float(ny));
+	vec3 lookFrom(3, 3, 2);
+	vec3 lookAt(0, 0, -1);
+	float distToFocus = (lookFrom - lookAt).length();
+	float aperture = 1.0;
+	Camera camera(lookFrom, lookAt, vec3(0, 1, 0), 20, float(nx)/float(ny), aperture, distToFocus);
 	Hitable *list[5];
 	list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.8, 0.3, 0.3)));
 	list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100, new Lambertian(vec3(0.8, 0.8, 0.0)));
