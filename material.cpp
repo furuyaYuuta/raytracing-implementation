@@ -34,3 +34,31 @@ bool Metal::scatter(const Ray &rayIn, const hit_record &record, vec3 &attenuatio
 	// if the angle of two vectors is within 90 degrees
 	return dot(scattered.getDirection(), record.normal) > 0;
 }
+
+bool Dielectric::scatter(const Ray &rayIn, const hit_record &record, vec3 &attenuation, Ray &scattered) const {
+	vec3 outwardNormal;
+	vec3 reflected = reflect(unit_vector(rayIn.getDirection()), record.normal);
+	float ni_over_nt;
+	// the glass surface absorb nothing
+	attenuation = vec3(1.0f, 1.0f, 1.0f);
+	vec3 refracted;
+	if(dot(rayIn.getDirection(), record.normal) > 0 ) {
+		// when the angle of two vectors is within 90 degrees
+		outwardNormal = -record.normal;
+		ni_over_nt = ref_idx;
+	} else {
+		// when the angle of two vectors is more than 90 degrees
+		// possible situation is that the ray goes through the object and hit the opposite surface
+		outwardNormal = record.normal;
+		ni_over_nt = 1.0f / ref_idx;
+	}
+
+	if(refract(rayIn.getDirection(), outwardNormal, ni_over_nt, refracted)) {
+		scattered = Ray(record.point, refracted);
+		return true;
+	}
+	else {
+		scattered = Ray(record.point, reflected);
+		return false;
+	}
+}

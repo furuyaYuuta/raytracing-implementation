@@ -31,4 +31,11 @@ public:
 	bool scatter(const Ray& rayIn, const hit_record& record, vec3& attenuation, Ray& scattered) const override;
 };
 
+class Dielectric : public Material {
+	float ref_idx;
+public:
+	explicit Dielectric(float ref_idx) : ref_idx(ref_idx) {}
+	bool scatter(const Ray& rayIn, const hit_record& record, vec3& attenuation, Ray& scattered) const override;
+};
+
 #endif //RAYTRACING_MATERIAL_HPP
