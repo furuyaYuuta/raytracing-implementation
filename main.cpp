@@ -66,24 +66,25 @@ Hitable *randomScene() {
 					float bAlbedo = randomFloat(0.0, 1.0) * randomFloat(0.0, 1.0);
 					list[idx++] = new Sphere(center, 0.2, new Lambertian(vec3(rAlbedo, gAlbedo, bAlbedo)));
 				} else if(matProb < 0.8) {
-					float rAlbedo = randomFloat(0.0f, 1.0f);
-					float gAlbedo = randomFloat(0.0f, 1.0f);
-					float bAlbedo = randomFloat(0.0f, 1.0f);
-					list[idx++] = new Sphere(center, 0.2, new Metal(vec3(rAlbedo, gAlbedo, bAlbedo)));
+					float rAlbedo = randomFloat(0.5f, 1.0f);
+					float gAlbedo = randomFloat(0.5f, 1.0f);
+					float bAlbedo = randomFloat(0.5f, 1.0f);
+					float fuzz = randomFloat(0.5f, 1.0f);
+					list[idx++] = new Sphere(center, 0.2, new Metal(vec3(rAlbedo, gAlbedo, bAlbedo), fuzz));
 				} else list[idx++] = new Sphere(center, 0.2, new Dielectric(1.5));
 			}
 		}
 	}
 	list[idx++] = new Sphere(vec3(0, 1, 0), 1.0, new Dielectric(1.5));
 	list[idx++] = new Sphere(vec3(-4, 1, 0), 1.0, new Lambertian(vec3(0.4, 0.2, 0.1)));
-	list[idx++] = new Sphere(vec3(4, 1, 0), 1.0, new Metal(vec3(0.7, 0.6, 0.5)));
+	list[idx++] = new Sphere(vec3(4, 1, 0), 1.0, new Metal(vec3(0.7, 0.6, 0.5), 0.0));
 
 	return new HitableList(list, idx);
 }
 
 int main() {
-	const int nx = 800, ny = 400;
-	const int ns = 50;
+	const int nx = 600, ny = 300;
+	const int ns = 20;
 	Image image(nx, ny);
 
 	const vec3 lookFrom(13, 2, 3);
