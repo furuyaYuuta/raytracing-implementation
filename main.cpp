@@ -55,20 +55,20 @@ Hitable *randomScene() {
 	Hitable **list = new Hitable*[n+1];
 	list[0] = new Sphere(vec3(0, -1000, 0), 1000, new Lambertian(vec3(0.5, 0.5, 0.5)));
 	int idx = 1;
-	for(int i = -11; i < 11; i++) {
-		for(int j = -11; j < 11; j++) {
+	for(int i = -7; i < 7; i++) {
+		for(int j = -7; j < 7; j++) {
 			float matProb = randomFloat(0.0, 1.0);
-			vec3 center(i + 0.9f * randomFloat(0.0, 1.0), 0.2, j + 0.9f * randomFloat(0.0, 1.0));
+			vec3 center(i + randomFloat(0.0, 0.9), 0.2, j + randomFloat(0.0, 0.9));
 			if((center - vec3(4, 0.2f, 0)).length() > 0.9) {
-				if(matProb < 0.6) {
+				if(matProb < 0.8) {
 					float rAlbedo = randomFloat(0.0, 1.0) * randomFloat(0.0, 1.0);
 					float gAlbedo = randomFloat(0.0, 1.0) * randomFloat(0.0, 1.0);
 					float bAlbedo = randomFloat(0.0, 1.0) * randomFloat(0.0, 1.0);
 					list[idx++] = new Sphere(center, 0.2, new Lambertian(vec3(rAlbedo, gAlbedo, bAlbedo)));
-				} else if(matProb < 0.8) {
-					float rAlbedo = randomFloat(-1.0f, 1.0f);
-					float gAlbedo = randomFloat(-1.0f, 1.0f);
-					float bAlbedo = randomFloat(-1.0f, 1.0f);
+				} else if(matProb < 0.95) {
+					float rAlbedo = randomFloat(0.0f, 1.0f);
+					float gAlbedo = randomFloat(0.0f, 1.0f);
+					float bAlbedo = randomFloat(0.0f, 1.0f);
 					list[idx++] = new Sphere(center, 0.2, new Metal(vec3(rAlbedo, gAlbedo, bAlbedo)));
 				} else list[idx++] = new Sphere(center, 0.2, new Dielectric(1.5));
 			}
@@ -82,22 +82,30 @@ Hitable *randomScene() {
 }
 
 int main() {
-	int nx = 800, ny = 400;
-	int ns = 50;
+	int nx = 1200, ny = 600;
+	int ns = 30;
 	Image image(nx, ny);
 
-	vec3 lookFrom(3, 3, 2);
-	vec3 lookAt(0, 0, -1);
-	float distToFocus = (lookFrom - lookAt).length();
-	float aperture = 1.0;
-	Camera camera(lookFrom, lookAt, vec3(0, 1, 0), 20, float(nx)/float(ny), aperture, distToFocus);
-	Hitable *list[5];
-	list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.8, 0.3, 0.3)));
-	list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100, new Lambertian(vec3(0.8, 0.8, 0.0)));
-	list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.4f, new Metal(vec3(0.8, 0.6, 0.2)));
-	list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.4f, new Dielectric(1.5));
-	list[4] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), -0.35f, new Dielectric(1.5));
-	Hitable *world = new HitableList(list, 5);
+//	vec3 lookFrom(3, 3, 2);
+//	vec3 lookAt(0, 0, -1);
+//	float distToFocus = (lookFrom - lookAt).length();
+//	float aperture = 1.0;
+//	Camera camera(lookFrom, lookAt, vec3(0, 1, 0), 20, float(nx)/float(ny), aperture, distToFocus);
+//	Hitable *list[5];
+//	list[0] = new Sphere(vec3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(vec3(0.8, 0.3, 0.3)));
+//	list[1] = new Sphere(vec3(0.0f, -100.5f, -1.0f), 100, new Lambertian(vec3(0.8, 0.8, 0.0)));
+//	list[2] = new Sphere(vec3(1.0f, 0.0f, -1.0f), 0.4f, new Metal(vec3(0.8, 0.6, 0.2)));
+//	list[3] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), 0.4f, new Dielectric(1.5));
+//	list[4] = new Sphere(vec3(-1.0f, 0.0f, -1.0f), -0.35f, new Dielectric(1.5));
+//	Hitable *world = new HitableList(list, 5);
+
+    const vec3 lookFrom(13, 2, 3);
+    const vec3 lookAt(0, 0, 0);
+    const vec3 lookUp(0, 1, 0);
+    const float distToFocus = (lookFrom - lookAt).length();
+    const float aperture = 0.1;
+    Camera camera(lookFrom, lookAt, lookUp, 20, float(nx)/float(ny), aperture, distToFocus);
+    Hitable *world = randomScene();
 
 	int i, j, count = 0;
 	#pragma omp parallel for private(i)
@@ -108,7 +116,6 @@ int main() {
 				float u = (i + randomFloat(0.0f, 1.0f)) / float(nx);
 				float v = (j + randomFloat(0.0f, 1.0f)) / float(ny);
 				Ray ray = camera.getRay(u, v);
-//				vec3 p = ray.point_at_parameter(2.0);
 				color += getColor(ray, world, 0);
 			}
 			color /= float(ns);
