@@ -16,8 +16,8 @@ Camera::Camera(vec3 lookFrom, vec3 lookAt, vec3 lookUp, float vFov, float aspect
 	u = unit_vector(cross(lookUp, w));
 	v = cross(w, u);
 	lowerLeftCorner = origin - focusDist * (half_width*u + half_height*v + w);
-	horizontal = 2 * half_width * focusDist* u;
-	vertical = 2 * half_height * focusDist* v;
+	horizontal = 2 * half_width * focusDist * u;
+	vertical = 2 * half_height * focusDist * v;
 }
 
 Ray Camera::getRay(float s, float t) {
